@@ -268,3 +268,5 @@ Your app will be live on `https://<your-project-id>.web.app`! 🎉
 - Message senders are validated against `request.auth.uid`.
 - File uploads are constrained by file size (< 25MB for attachments, < 5MB for profile avatars) and content type.
 - User presence is automatically managed and disconnected on window unload.
+#   c l o u d - c h a t  
+ 
