@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isRoomMember(roomId) {
+      return isAuthenticated() && 
+        request.auth.uid in get(/databases/$(database)/documents/rooms/$(roomId)).data.members;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Authenticated users can read other users for directory search and profile display
+      allow read: if isAuthenticated();
+      // Users can only create or edit their own profile
+      allow create, update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // Rooms Collection
+    match /rooms/{roomId} {
+      // Any authenticated user can create a room where they are listed as member
+      allow create: if isAuthenticated() && 
+        request.auth.uid in request.resource.data.members;
+        
+      // Only room members can read room metadata
+      allow read: if isAuthenticated() && 
+        request.auth.uid in resource.data.members;
+        
+      // Room members can update room (lastMessage, unreadCount, typing, members)
+      allow update: if isAuthenticated() && 
+        (request.auth.uid in resource.data.members || request.auth.uid in request.resource.data.members);
+        
+      // Only room admins or creator can delete room
+      allow delete: if isAuthenticated() && 
+        (resource.data.createdBy == request.auth.uid || request.auth.uid in resource.data.adminIds);
+
+      // Messages Subcollection
+      match /messages/{messageId} {
+        // Only members of the room can read messages
+        allow read: if isRoomMember(roomId);
+        
+        // Members can create messages where they are the sender
+        allow create: if isRoomMember(roomId) && 
+          request.resource.data.senderId == request.auth.uid;
+          
+        // Members can update message status (readBy array)
+        allow update: if isRoomMember(roomId);
+        
+        // Sender can delete their own message
+        allow delete: if isAuthenticated() && 
+          resource.data.senderId == request.auth.uid;
+      }
+    }
+  }
+}
