@@ -2,7 +2,7 @@
 
 A modern, responsive, real-time messaging platform inspired by WhatsApp and Telegram. Built using **React 19, TypeScript, Tailwind CSS, and Firebase**, CloudChat provides secure authentication, instant messaging, group conversations, media sharing, and real-time notifications.
 
-![CloudChat](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80)
+![CloudChat]
 
 ---
 
